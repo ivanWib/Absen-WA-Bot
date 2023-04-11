@@ -1,6 +1,7 @@
 const qrcode = require("qrcode-terminal");
 const fs = require("fs");
 const { Client } = require("whatsapp-web.js");
+const { Prisma } = require("@prisma/client");
 const client = new Client();
 
 client.on("qr", (qr) => {
