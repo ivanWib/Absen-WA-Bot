@@ -1,8 +1,10 @@
 import qrcode from "qrcode-terminal";
 import { writeFileSync } from "fs";
 import { Client } from "whatsapp-web.js";
-import { Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+
 const client = new Client();
+const prisma = new PrismaClient();
 
 client.on("qr", (qr) => {
   qrcode.generate(qr, { small: true });
@@ -13,37 +15,56 @@ client.on("ready", () => {
 });
 
 client.on("message", async (message) => {
-  console.log(" ");
-  console.log(message.body);
-  console.log("------------------");
-  console.log(message.from);
-  console.log("------------------");
-  const date = Date(message.timestamp * 1000);
-  console.log(date);
+  const command = "!absen";
+  const name = message.body.slice(command.length).trim();
 
-  // Untuk mengecek apakah pesan yang diterima memiliki media atau tidak
-  if (message.hasMedia) {
-    const media = await message.downloadMedia();
-    const mimeType = media.mimetype.split("/")[1];
-    // const filename = `${Date.now()}.${mimeType}`;
+  if (message.body.startsWith(command) && name) {
+    if (message.hasMedia) {
+      const media = await message.downloadMedia();
+      const mimeType = media.mimetype.split("/")[1];
+      const filename = `${name}.${mimeType}`;
+      const decodedImage = Buffer.from(media.data, "base64");
 
-    const filename = `${message.body}.${mimeType}`;
+      writeFileSync(`uploads/${filename}`, decodedImage);
 
-    // Menyimpan data gambar dalam format Base64 ke file
-    // writeFileSync(filename, media.data, { encoding: "base64" });
+      console.log(`Gambar ${filename} berhasil didownload dan dideskripsi!`);
 
-    // Membaca data gambar dari file dan mendecode dari format Base64 ke gambar
-    const decodedImage = Buffer.from(media.data, "base64");
+      const absen = await prisma.user.create({
+        data: {
+          name: name,
+          photo: filename,
+        },
+      });
 
-    // Simpan gambar ke file
-    // fs.writeFileSync(`decoded_${filename}`, decodedImage);
+      console.log(
+        "Data berhasil disimpan ke database! \nNama : " +
+          name +
+          " \nPhoto : " +
+          filename
+      );
 
-    // simpan gambar ke folder uploads
-    writeFileSync(`uploads/${filename}`, decodedImage);
-
-    console.log(`Gambar ${filename} berhasil didownload dan dideskripsi!`);
+      client.sendMessage(
+        message.from,
+        "Data berhasil disimpan ke database! \nNama : " +
+          name +
+          " \nPhoto : " +
+          filename
+      );
+    } else {
+      client.sendMessage(
+        message.from,
+        "Gambar tidak ditemukan!, silahkan kirim ulang gambar"
+      );
+    }
+  } else {
+    client.sendMessage(
+      message.from,
+      "Invalid command, please use !absen followed by your name to submit attendance."
+    );
   }
 });
+
+client.on("message", async (message) => {});
 
 client.on("disconnected", (reason) => {
   console.log("Client was logged out", reason);
