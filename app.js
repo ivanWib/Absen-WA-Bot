@@ -56,12 +56,15 @@ client.on("message", async (message) => {
         "Gambar tidak ditemukan!, silahkan kirim ulang gambar"
       );
     }
-  } else {
-    client.sendMessage(
-      message.from,
-      "Invalid command, please use !absen followed by your name to submit attendance."
-    );
   }
+
+  // Lain kali ini dihapus ya :D
+  // else {
+  //   client.sendMessage(
+  //     message.from,
+  //     "Invalid command, please use !absen followed by your name to submit attendance."
+  //   );
+  // }
 });
 
 client.on("message", async (message) => {});
