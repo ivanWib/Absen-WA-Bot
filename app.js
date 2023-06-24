@@ -1,6 +1,6 @@
 import qrcode from "qrcode-terminal";
 import { writeFileSync } from "fs";
-import { Client } from "whatsapp-web.js";
+import { Client, Location } from "whatsapp-web.js";
 import { PrismaClient } from "@prisma/client";
 
 const client = new Client();
@@ -29,10 +29,24 @@ client.on("message", async (message) => {
 
       console.log(`Gambar ${filename} berhasil didownload dan dideskripsi!`);
 
+      // location
+      const location = message.location;
+      const latitude = location.latitude;
+      const longitude = location.longitude;
+      const description = location.description;
+
+      console.log("Latitude:", latitude);
+      console.log("Longitude:", longitude);
+      console.log("Description:", description);
+
+      getLocation = new Location(latitude, longitude, description);
+      console.log(getLocation);
+
       const absen = await prisma.user.create({
         data: {
           name: name,
           photo: filename,
+          location: getLocation,
         },
       });
 
@@ -57,14 +71,6 @@ client.on("message", async (message) => {
       );
     }
   }
-
-  // Lain kali ini dihapus ya :D
-  // else {
-  //   client.sendMessage(
-  //     message.from,
-  //     "Invalid command, please use !absen followed by your name to submit attendance."
-  //   );
-  // }
 });
 
 client.on("message", async (message) => {});
