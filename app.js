@@ -1,6 +1,6 @@
 import qrcode from "qrcode-terminal";
 import { writeFileSync } from "fs";
-import { Client, Location } from "whatsapp-web.js";
+import { Client } from "whatsapp-web.js";
 import { PrismaClient } from "@prisma/client";
 
 const client = new Client();
